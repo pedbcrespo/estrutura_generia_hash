@@ -1,3 +1,4 @@
+/*Aqui fica apenas o necessario*/
 typedef struct tabela *tbl;
 
 tbl inicializa(int tamanho);
