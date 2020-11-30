@@ -15,7 +15,7 @@ typedef struct Jogo{
 int main(){
     system("cls");
     int opc =-1, tam = 11, id;
-    tbl vetor = inicializa(tam);
+    tbl vetor = inicializa(tam, sizeof(jogo));
     
     while(opc != 0){
         opc = menu("1)inserir\n2)buscar\n3)imprimir\n0)sair\n");
@@ -35,7 +35,7 @@ int main(){
             printf("avaliacao: ");
             scanf("%f", &novo.avaliacao);
 
-            inserir(vetor, tam, id, &novo, sizeof(novo));
+            inserir(vetor, id, &novo, sizeof(novo));
         }
         else if(opc == 2){
             int id_busca;
@@ -44,14 +44,14 @@ int main(){
             printf("id: ");
             scanf("%d", &id_busca);
 
-            if(buscar(vetor, tam, id_busca, &buscado, sizeof(buscado))){
+            if(buscar(vetor,id_busca, &buscado, sizeof(buscado))){
                 printf("titulo: %s\nempresa: %s\nano: %d\ngenero: %s\navaliacao: %.2f\n", buscado.titulo, buscado.empresa, buscado.ano_lancamento, buscado.genero, buscado.avaliacao);
             }else{
                 printf("nao encontrado\n");
             }
         }
         else if(opc == 3){
-            imprimir(vetor, tam);
+            imprimir(vetor);
         }
         else{
             break;

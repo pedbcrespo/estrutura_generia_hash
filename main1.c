@@ -13,7 +13,7 @@ typedef struct Pessoa{
 int main(){
     system("cls");
     int opc =-1, tam = 11, id;
-    tbl vetor = inicializa(tam);
+    tbl vetor = inicializa(tam, sizeof(pessoa));
     
     while(opc != 0){
         opc = menu("1)inserir\n2)buscar\n3)imprimir\n0)sair\n");
@@ -29,14 +29,14 @@ int main(){
             printf("altura: ");
             scanf("%f", &novo.altura);
 
-            inserir(vetor, tam, id, &novo, sizeof(novo));
+            inserir(vetor, id, &novo, sizeof(novo));
         }
         else if(opc == 2){//Buscar
             int id_busca;
             pessoa individuo;
             printf("id: ");
             scanf("%d", &id_busca);
-            if(buscar(vetor, tam, id_busca, &individuo, sizeof(individuo))){
+            if(buscar(vetor, id_busca, &individuo, sizeof(individuo))){
                 printf("nome: %s\nano de nascimento: %d\naltura: %.2f\n", individuo.nome, individuo.ano_nascimento, individuo.altura);
             }else{
                 printf("nao encontrado\n");
@@ -44,7 +44,7 @@ int main(){
 
         }
         else if(opc == 3){//Imprimir
-            imprimir(vetor, tam);
+            imprimir(vetor);
         }
         else{//Sair
             break;
@@ -52,7 +52,7 @@ int main(){
         system("pause");
         system("cls");
     }
-    vetor = destruir(vetor, tam);
+    vetor = destruir(vetor);
 }
 
 int menu(char*texto){

@@ -1,10 +1,9 @@
-/*Aqui fica apenas o necessario*/
 typedef struct tabela *tbl;
 
-tbl inicializa(int tamanho);
-tbl destruir(tbl vetor, int tamanho);
+tbl inicializa(int tamanho, int tam_obj);
+tbl destruir(tbl vetor);
 
-int buscar(tbl tab, int tamanho_tab, int id, void*objeto, int tam_obj);
+int buscar(tbl tab, int id, void*objeto, int tam_obj);
 
-void inserir(tbl tab, int tamanho_tab, int id, void*objeto, int tam_obj);
-void imprimir(tbl tab, int tamanho);
+void inserir(tbl tab, int id, void*objeto, int tam_obj);
+void imprimir(tbl tab);
