@@ -101,19 +101,30 @@ int inserir_elem(tbl tab, int id, void*objeto, int tam_obj){
     return 1;
 }
 int buscar(tbl tab, int id, void*objeto, int tam_obj){
+    FILE*regs = fopen("registros.bin", "rb");
+    FILE*chaves = fopen("chaves.bin", "rb");
     int pos = func_hash(id, tab->tamanho);
     int desl = func_hash2(pos, tab->tamanho);
+    int pos_aux;
+    int elem;
+    
+    fseek(chaves, pos*sizeof(int), SEEK_SET);
+    fread(&elem, sizeof(int), 1, chaves);
 
-    while(tab->vetor[pos].id != id && tab->vetor[pos].id != 0){
+    while(elem != id && elem != 0){
         pos = (pos+desl) % tab->tamanho;
+        fseek(chaves, pos*sizeof(int), SEEK_SET);
+        fread(&elem, sizeof(int), 1, chaves);
     }
-    if(tab->vetor[pos].id == 0){
+    if(elem == 0){
         return 0;
     }
     else{
-        memcpy(objeto, tab->vetor[pos].objeto, tam_obj);
+        fseek(regs, pos*tam_obj, SEEK_SET);
+        fread(objeto, tam_obj, 1, regs);
         return 1;
     }
+
 }
 
 
