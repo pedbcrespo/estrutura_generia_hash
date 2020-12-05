@@ -136,7 +136,7 @@ void salvar(tbl tab, int id, void*objeto, int tam_obj){
 }
 
 void inserir(tbl tab, int id, void*objeto, int tam_obj){
-        void*aux;
+        void*aux = (void*)malloc(tam_obj);
         if(buscar(tab, id, aux, tam_obj)){
             printf("id ja existente\n");
         }
@@ -148,6 +148,7 @@ void inserir(tbl tab, int id, void*objeto, int tam_obj){
         else{
             printf("nao foi possivel inserir o elemento\n");
         }
+        free(aux);
     }
 }
 
