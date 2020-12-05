@@ -3,70 +3,60 @@
 #include<string.h>
 #include"hashing.h"
 
-typedef struct hash{
+typedef struct tupla{
     int id;
-    void*objeto;
-}*hash;
+    int pos_registros;
+}tup;
 
 struct tabela{
     int tamanho;
-    hash vetor;
+    tup*vetor;
 };
 
 
 //=======================TBL FUNCOES===================//
 tbl carregar(int tam_obj){
-    FILE*arq = fopen("registros.bin", "rb");
-    FILE*arq_id = fopen("chaves.bin", "rb");
+    FILE*chaves = fopen("chaves.bin", "rb");
     
-    tbl vetor = (struct tabela*)malloc(sizeof(struct tabela));
+    if(chaves == NULL){
+        return NULL;
+    }
 
-    fseek(arq_id, 0, SEEK_END);
-    vetor->tamanho = ftell(arq_id)/sizeof(int);
-    fseek(arq_id, 0, SEEK_SET);
+    tbl tab = (struct tabela*)malloc(sizeof(struct tabela));
+    fseek(chaves, 0, SEEK_END);
+    tab->tamanho = ftell(chaves)/sizeof(tup);
+    fseek(chaves, 0, SEEK_SET);
 
-    vetor->vetor = (struct hash*)malloc(vetor->tamanho * sizeof(struct hash));
-
-    for(int i=0; i<vetor->tamanho; i++){
-        fread(&vetor->vetor[i].id, sizeof(int), 1, arq_id);
-        vetor->vetor[i].objeto = (void*)malloc(tam_obj);
-        if(vetor->vetor[i].id != 0){
-            fread(vetor->vetor[i].objeto, tam_obj, 1, arq);
-        }else
-            vetor->vetor[i].objeto = NULL;
-    }    
-    fclose(arq);
-    fclose(arq_id);
-
-    return vetor;
+    tab->vetor = (tup*)malloc(tab->tamanho * sizeof(tup));
+    fread(tab->vetor, sizeof(tup), tab->tamanho, chaves);
+    fclose(chaves);
+    return tab;
 }
+
 tbl inicializa(int tamanho, int tam_obj){
-    FILE*arq = fopen("registros.bin", "rb");
-    FILE*arq_id = fopen("chaves.bin", "rb");
-    
-    if(arq == NULL && arq_id == NULL){
-        tbl vetor = (struct tabela*)malloc(sizeof(struct tabela));
-        vetor->tamanho = tamanho;
-        vetor->vetor = (struct hash*)malloc(tamanho*sizeof(struct hash));
-        for(int i=0; i<tamanho; i++){
-            vetor->vetor[i].id = 0;
-            vetor->vetor[i].objeto = NULL;
-        }        
-        return vetor;
+    tbl tab = carregar(tam_obj);
+    if(tab == NULL){
+        printf("arquivos .bin inexistentes\n");
+        FILE*chaves = fopen("chaves.bin", "wb");
+        FILE*registros = fopen("registros.bin", "wb");
+        fclose(registros);
+        tab = (struct tabela*)malloc(sizeof(struct tabela));
+        tab->tamanho = tamanho;
+        tab->vetor = (tup*)malloc(tamanho*sizeof(tup));
+        for(int i=0; i< tab->tamanho; i++){
+            tab->vetor[i].id = 0;
+            tab->vetor[i].pos_registros = -1;
+        }
+
+        fwrite(tab->vetor, sizeof(tup), tamanho, chaves);
+        fclose(chaves);
     }
-    else{
-        printf("arquivo .bin existente\n");
-        fclose(arq);
-        fclose(arq_id);
-        return carregar(tam_obj);
-    }
+    return tab;
 }
-tbl destruir(tbl vetor){
-    for(int i=0; i<vetor->tamanho; i++){
-        free(vetor->vetor[i].objeto);
-    }
-    free(vetor->vetor);
-    free(vetor);
+
+tbl destruir(tbl tab){
+    free(tab->vetor);
+    free(tab);
     return NULL;
 }
 
@@ -75,9 +65,11 @@ tbl destruir(tbl vetor){
 int func_hash(int valor, int tam){
 	return valor%tam;
 }
+
 int func_hash2(int valor, int tam){
 	return tam - 2 - (valor % (tam - 2));
 }
+
 int cheio(tbl tab){
     for(int i=0; i<tab->tamanho; i++){
         if(tab->vetor[i].id == 0){
@@ -86,74 +78,83 @@ int cheio(tbl tab){
     }
     return 1;
 }
-int inserir_elem(tbl tab, int id, void*objeto, int tam_obj){
+
+int buscar(tbl tab, int id, void*objeto, int tam_obj){
+    FILE*chaves = fopen("chaves.bin", "rb");
+    int pos = func_hash(id, tab->tamanho);
+    int desl = func_hash2(pos, tab->tamanho);
+    tup aux;    
+    fseek(chaves, pos*sizeof(tup), SEEK_SET);
+    fread(&aux, sizeof(tup), 1, chaves);
+    while(aux.id != 0 && aux.id != id){
+        pos = (pos + desl) % tab->tamanho;
+        fseek(chaves, pos*sizeof(tup), SEEK_SET);
+        fread(&aux, sizeof(tup), 1, chaves);
+    }
+    fclose(chaves);
+
+    if(aux.id == 0)
+        return 0;
+    else{
+        FILE*registros = fopen("registros.bin", "rb");
+        fseek(registros, aux.pos_registros*tam_obj, SEEK_SET);
+        fread(objeto, tam_obj, 1, registros);
+    }
+    return 1;
+}
+
+int inserir_elemento(tbl tab, int id, void*objeto, int tam_obj){
     int pos = func_hash(id, tab->tamanho);
     int desl = func_hash2(pos, tab->tamanho);
     if(cheio(tab)){
         return 0;
     }
+
     while(tab->vetor[pos].id != 0){
-        pos = (pos+desl)%tab->tamanho;
+        pos = (pos + desl) % tab->tamanho;
     }
     tab->vetor[pos].id = id;
-    tab->vetor[pos].objeto = (void*)malloc(tam_obj);
-    memcpy(tab->vetor[pos].objeto, objeto, tam_obj);
+    FILE*registros = fopen("registros.bin", "rb");
+    fseek(registros, 0, SEEK_END);
+    tab->vetor[pos].pos_registros = ftell(registros)/tam_obj;
+    fseek(registros, 0, SEEK_SET);
+    fclose(registros);
     return 1;
 }
-int buscar(tbl tab, int id, void*objeto, int tam_obj){
-    FILE*regs = fopen("registros.bin", "rb");
-    FILE*chaves = fopen("chaves.bin", "rb");
-    int pos = func_hash(id, tab->tamanho);
-    int desl = func_hash2(pos, tab->tamanho);
-    int pos_aux;
-    int elem;
-    
-    fseek(chaves, pos*sizeof(int), SEEK_SET);
-    fread(&elem, sizeof(int), 1, chaves);
 
-    while(elem != id && elem != 0){
-        pos = (pos+desl) % tab->tamanho;
-        fseek(chaves, pos*sizeof(int), SEEK_SET);
-        fread(&elem, sizeof(int), 1, chaves);
-    }
-    if(elem == 0){
-        return 0;
-    }
-    else{
-        fseek(regs, pos*tam_obj, SEEK_SET);
-        fread(objeto, tam_obj, 1, regs);
-        return 1;
-    }
-
-}
 
 
 //=======================VOID FUNCOES===================//
-void salvar(tbl tab, int tam_obj){
-    int*vetor_id = (int*)malloc(tab->tamanho*sizeof(int));
-    
-    FILE*arq = fopen("registros.bin", "wb");
-    FILE*arq2 = fopen("chaves.bin", "wb");
+void salvar(tbl tab, int id, void*objeto, int tam_obj){
+    FILE*chaves = fopen("chaves.bin", "wb");
+    FILE*registros = fopen("registros.bin", "ab");
 
-    for(int i=0; i<tab->tamanho; i++){
-        vetor_id[i] = tab->vetor[i].id;
-        fwrite(tab->vetor[i].objeto, tam_obj, 1, arq);
-    }
-    fwrite(vetor_id, sizeof(int), tab->tamanho, arq2);
-    fclose(arq);
-    fclose(arq2);
+    fwrite(objeto, tam_obj, 1, registros);
+    fwrite(tab->vetor, sizeof(tup), tab->tamanho, chaves);
+    fclose(registros);
+    fclose(chaves);
 }
+
 void inserir(tbl tab, int id, void*objeto, int tam_obj){
-    if(inserir_elem(tab, id, objeto, tam_obj)){
-        salvar(tab, tam_obj);
-        printf("valor inserido\n");
-    }else{
-        printf("tabela cheia\n");
+        void*aux;
+        if(buscar(tab, id, aux, tam_obj)){
+            printf("id ja existente\n");
+        }
+        else{
+            if(inserir_elemento(tab, id, objeto, tam_obj)){
+            salvar(tab, id, objeto, tam_obj);
+            printf("inserido com sucesso\n");
+        }
+        else{
+            printf("nao foi possivel inserir o elemento\n");
+        }
     }
-
 }
+
 void imprimir(tbl tab){
     for(int i=0; i<tab->tamanho; i++){
         printf("%d\n", tab->vetor[i].id);
     }
+
+    printf("\n\n\n");
 }
