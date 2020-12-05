@@ -138,7 +138,7 @@ na tupla (id, posição). Em seguida o objeto é armazenado no arquivo "registro
     No final, é retornado o valor 1, mostrando que o elemento foi inserido com sucesso. Teria retornado o valor 0 caso
 não houvesse espaço na tabela, sinalizando que a mesma ja esta cheia.
 */
-int inserir_elemento(tbl tab, int id, void*objeto, int tam_obj){
+int inserir_elemento(tbl tab, int id, int tam_obj){
     int pos = func_hash(id, tab->tamanho);
     int desl = func_hash2(pos, tab->tamanho);
     if(cheio(tab)){
@@ -160,6 +160,10 @@ int inserir_elemento(tbl tab, int id, void*objeto, int tam_obj){
 
 
 //=======================VOID FUNCOES===================//
+
+/*  Apos o procedimento de inserção, é chamada a função salvar, na qual sobreescreve o conteudo do arquivo "chaves.bin"
+pelos dados atualizados da tabela e adiciona no final do arquivo o objeto inserido
+*/
 void salvar(tbl tab, int id, void*objeto, int tam_obj){
     FILE*chaves = fopen("chaves.bin", "wb");
     FILE*registros = fopen("registros.bin", "ab");
@@ -183,7 +187,7 @@ void inserir(tbl tab, int id, void*objeto, int tam_obj){
             printf("id ja existente\n");
         }
         else{
-            if(inserir_elemento(tab, id, objeto, tam_obj)){
+            if(inserir_elemento(tab, id, tam_obj)){
             salvar(tab, id, objeto, tam_obj);
             printf("inserido com sucesso\n");
         }
