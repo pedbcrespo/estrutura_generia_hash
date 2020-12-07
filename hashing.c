@@ -43,7 +43,8 @@ tbl carregar(int tam_obj){
 }
 
 
-/*  A função inicializa vai, inicialmente, tentar carregar o arquivo binario "chaves.bin", caso exista, uma tabela é instanciada e o seus dados serao carregados para a tabela. Caso o contrario, uma nova tabela é instanciada e valores iniciais são atribuidos.
+/*  A função inicializa vai, inicialmente, tentar carregar o arquivo binario "chaves.bin", caso exista, uma tabela é instanciada e o seus dados serao carregados para a tabela. 
+Caso o contrario, uma nova tabela é instanciada e valores iniciais são atribuidos.
     Os valores iniciais 0 e -1 servem para representar que os elementos da tabela estão livres para serem usados.
 */
 tbl inicializa(int tamanho, int tam_obj){
@@ -100,8 +101,8 @@ objeto procurado seja encontrado.
 Caso encontre um identificador = 0, significa que o valor buscado não existe.
     
     Toda a operação é feita no arquivo "chaves.bin", tendo em vista que a busca é feita pelo identificador. 
-Caso seja encontrado o objeto procurado, pela tupla (id, posição), o objeto é encontrado e retornado pela sua posição 
-no arquivo "registros.bin".
+Caso seja encontrado o objeto procurado, pela tupla (id, posição), os dados sao buscados no arquivo "registros.bin"
+e retornado.
 
 */
 
@@ -162,7 +163,7 @@ int inserir_elemento(tbl tab, int id, int tam_obj){
 //=======================VOID FUNCOES===================//
 
 /*  Apos o procedimento de inserção, é chamada a função salvar, na qual sobreescreve o conteudo do arquivo "chaves.bin"
-pelos dados atualizados da tabela e adiciona no final do arquivo o objeto inserido
+pelos dados atualizados da tabela e adiciona no final do arquivo "registros.bin" o objeto inserido
 */
 void salvar(tbl tab, int id, void*objeto, int tam_obj){
     FILE*chaves = fopen("chaves.bin", "wb");
