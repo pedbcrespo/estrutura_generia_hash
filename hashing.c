@@ -110,6 +110,7 @@ int buscar(tbl tab, int id, void*objeto, int tam_obj){
     FILE*chaves = fopen("chaves.bin", "rb");
     int pos = func_hash(id, tab->tamanho);
     int desl = func_hash2(pos, tab->tamanho);
+    int contador = 0;
     tup aux;    
     fseek(chaves, pos*sizeof(tup), SEEK_SET);
     fread(&aux, sizeof(tup), 1, chaves);
@@ -117,10 +118,11 @@ int buscar(tbl tab, int id, void*objeto, int tam_obj){
         pos = (pos + desl) % tab->tamanho;
         fseek(chaves, pos*sizeof(tup), SEEK_SET);
         fread(&aux, sizeof(tup), 1, chaves);
+        contador++;
     }
     fclose(chaves);
 
-    if(aux.id == 0)
+    if(aux.id == 0 || contador >= tab->tamanho)
         return 0;
     else{
         FILE*registros = fopen("registros.bin", "rb");
