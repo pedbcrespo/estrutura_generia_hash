@@ -115,14 +115,18 @@ int buscar(tbl tab, int id, void*objeto, int tam_obj){
     fseek(chaves, pos*sizeof(tup), SEEK_SET);
     fread(&aux, sizeof(tup), 1, chaves);
     while(aux.id != 0 && aux.id != id){
+        contador++;
         pos = (pos + desl) % tab->tamanho;
         fseek(chaves, pos*sizeof(tup), SEEK_SET);
         fread(&aux, sizeof(tup), 1, chaves);
-        contador++;
+        if(contador >= tab->tamanho){
+            fclose(chaves);
+            return 0;
+        }
     }
     fclose(chaves);
 
-    if(aux.id == 0 || contador >= tab->tamanho)
+    if(aux.id == 0)
         return 0;
     else{
         FILE*registros = fopen("registros.bin", "rb");
@@ -194,11 +198,11 @@ void inserir(tbl tab, int id, void*objeto, int tam_obj){
             salvar(tab, id, objeto, tam_obj);
             printf("inserido com sucesso\n");
         }
-        else{
-            printf("nao foi possivel inserir o elemento\n");
+            else{
+                printf("nao foi possivel inserir o elemento\n");
+            }
+            free(aux);
         }
-        free(aux);
-    }
 }
 
 void imprimir(tbl tab){

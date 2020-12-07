@@ -12,7 +12,7 @@ typedef struct Pessoa{
 
 int main(){
     system("cls");
-    int opc =-1, tam = 11, id;
+    int opc =-1, tam = 5, id;
     tbl vetor = inicializa(tam, sizeof(pessoa));
     
     while(opc != 0){
